@@ -31,94 +31,65 @@ spring:
 words: boat,book,vote,seat,backpack,partition,groundhog
   
   
-  	<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-<title>Hazelcast Data Extract Utility</title>
-</head>
-	<script
-		src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
-	<script src="/gfApp.js"></script>
-	<script src="/gfDataCtrl.js"></script>
-<body>
-<p>
-<div ng-app="gfApp" ng-controller="gfDataCtrl">
+ gfApp.controller("gfDataCtrl",function($scope,$log,$http){
+	$scope.hasData = false;
+	$scope.hasImage = false;
+	$scope.hasErrors = false;
+	$scope.formData={};
+	$scope.formData.port="10334";
+	$scope.formData.pdxStore="PdxStore";
+	$scope.formData.host="sd-86c4-4f11.nam.nsroot.net";
+	$scope.logger=function(type,mesg){
+		if(type == "INFO"){
+			$log.info(mesg);
+		}
+		if(type == "WARN"){
+			$log.warn(mesg);
+		}
+		if(type == "ERROR"){
+			$log.error(mesg);
+		}
+	};
+	$scope.getData=function(){
+		var gfData="";
+		$scope.hasData = false;
+		$scope.hasErrors = false;
+		$scope.logger("INFO",$scope.formData);
 
-<div class="container">
-	<div class="row">
-		<div class="col-md-12">
-			<nav class="navbar navbar-default">
-				<div class="container-fluid">
-					<div class="navbar-header">
-						<a class="navbar-brand" href="#">Hazelcast Trouble-shooting Tool</a>
-					</div>
-				</div>
-			</nav>
-		</div>
-	</div>
-	<div class="row ">
-		<div class="col-md-12">
-			<div class="panel panel-primary">
-					<div class="panel-heading">Search</div>
-					<div class="panel-body">
- 
-						<div class="container">
-						  <form class="form-horizontal" role="form">
-						  	<div class="row">
-							    <div class="form-group">
-							      <label class="control-label col-sm-1" for="host">Host:</label>
-							      <div class="col-sm-3">
-									<select class="form-control" 
-										ng-model="formData.host">
-										<option value="v1">v1</option>
-										<option value="v2">v2</option>
-							      </div>
-							      <label class="control-label col-sm-1" for="port">Port:</label>
-							      <div class="col-sm-1">          
-							        <input type="text" class="form-control" id="port" ng-model="formData.port" placeholder="10334" >
-							      </div>
-							      <label class="control-label col-sm-1" for="region">Region:</label>
-							      <div class="col-sm-3">          
-							        <input type="text" class="form-control" id="region" ng-model="formData.region" placeholder="Session">
-							      </div>
-							    </div>
-						  	</div>
-						  	<div class="row">
-							    <div class="form-group">
-							      <label class="control-label col-sm-1" for="region">PdxStore:</label>
-							      <div class="col-sm-3">          
-							        <input type="text" class="form-control" id="pdxStore" ng-model="formData.pdxStore" placeholder="PdxStore" >
-							      </div>
-							      <label class="control-label col-sm-1" for="region">Key:</label>
-							      <div class="col-sm-5">          
-							        <input type="text" class="form-control" id="key" ng-model="formData.key" placeholder="12345-12345-12345-12345-12345-12345">
-							      </div>
-							    </div>
-						    </div>
-						  	<div class="row">
-							    <div class="form-group">
-							      <label class="control-label col-sm-1" for="clearRegion">Clear Region:</label>
-							      <div class="col-sm-1">          
-							        <input type="checkbox" class="form-control" id="pdxStore" ng-model="formData.clearRegion"  >
-							      </div>
-							      <label class="control-label col-sm-3" for="clearRregion" ng-show="formData.clearRegion" >Password:</label>
-							      <div class="col-sm-5" >          
-							        <input type="password" class="form-control" id="auth" ng-model="formData.auth" ng-show="formData.clearRegion">
-							      </div>
-							    </div>
-						    </div>
-						  	<div class="row">
-							    <div class="form-group">        
-							      <div class="col-sm-offset-1 col-sm-10">
-							        <button type="submit" class="btn btn-primary btn-sm" ng-click="getData()">Submit</button>
-							      </div>
-							    </div>
-						    </div>
-						  </form>
-						</div>
-					</div>
-			</div>
-		</div>
-	</div>
+		$http.post('/mydata',
+			{
+			host:$scope.formData.host,
+			port:$scope.formData.port,
+			region:$scope.formData.region,
+			pdxStore:$scope.formData.pdxStore,
+			key:$scope.formData.key,
+			clearRegion:$scope.formData.clearRegion,
+			password:$scope.formData.auth,
+			})
+		.then(function success(response){
+			gfData = response.data;
+			$scope.errors = gfData.errors;
+			if(angular.isObject(gfData.data) && (gfData.data.length > 0)){
+				$scope.data = gfData.data;
+				$scope.hasData = true;
+			}
+
+			if(gfData.dataImage === null ){
+				$scope.hasImage = false;
+			}else{
+				$scope.dataImage = gfData.dataImage;
+				$scope.hasImage = true;
+			}
+			
+			if(angular.isObject(gfData.errors) && (gfData.errors.length > 0)){
+				$scope.hasErrors = true;
+			}
+		},function error(response){
+			$scope.errorData=response.data;
+		});
+		
+		$scope.formData.clearRegion = false;
+		$scope.formData.auth = "";
+		
+	};
+});
