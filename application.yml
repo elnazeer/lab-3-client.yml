@@ -30,3 +30,39 @@ spring:
   profiles: noun
 words: boat,book,vote,seat,backpack,partition,groundhog
   
+  
+  	<div class="row" ng-show="hasData">
+		<div class="col-md-12">
+			<div class="well well-lg">
+				<small>
+				<table>
+				  <tr ng-repeat="d in data track by $index">
+				    <td>{{ d }}</td>
+				  </tr>
+				</table>
+				</small>				
+			</div>
+		</div>
+		<div class="col-md-12" ng-show="hasImage">
+			<div class="well well-lg">
+				Image is :&nbsp;<img ng-src="data:image/JPEG;base64,{{dataImage}}"/>
+			</div>
+		</div>
+	</div>	
+	<div class="row">
+	<span style="color:red" ng-show="hasErrors">
+				Errors:</label>
+			<ul>
+				<li ng-repeat="x in errors">{{x}}</li>
+			</ul>
+	</span>		
+	</div>
+	<div class="row">
+		<span class="glyphicon glyphicon-info-sign"><small>&nbsp;Developed by </small></span>  	 	
+	</div>
+</div>
+</p>		
+</div>
+</body>
+
+</html>
